@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/materialize.min.css' %}">
+    <title>Вход</title>
+</head>
+<body>
+<style>
+
+</style>
+<div class="wrapper d-flex wh100">
+    <div id="login_page" class="content-wrapper wh100">
+        <form class="card">
+            <div class="name deep-purple-text"><i class="material-icons">insert_chart</i>Банк статистики</div>
+            <div class="error-msg">Неверно введен логин или пароль</div>
+            <div class="controls">
+                {% csrf_token %}
+                <input id="next" type="hidden" name="next" value="{{request.GET.next}}">
+                <div class="input-field">
+                    <input id="login" name="login" type="text" class="validate">
+                    <label for="login">Логин</label>
+                </div>
+                <div class="input-field">
+                    <input id="password" name="password" type="password" class="validate">
+                    <label for="password">Пароль</label>
+                </div>
+                <div class="submit right">
+                    <button class="waves-effect deep-purple waves-light btn">Войти</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script
+        src="http://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+<script src="{% static 'js/materialize.min.js' %}"></script>
+<script src="{% static 'js/login.js' %}"></script>
+</body>
+</html>

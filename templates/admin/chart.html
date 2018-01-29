@@ -1,0 +1,76 @@
+{%extends 'admin/base.html'%}
+{% load staticfiles %}
+
+{% block title %}Редактирование - Банк статистики{% endblock %}
+{% block logo %}<a href="{% url 'admin' %}" class="brand-logo center">Редактирование <span>&laquo;{{table.name}}&raquo;</span></a>{% endblock %}
+{% block action %}<a class="btn-floating action-add btn-large deep-orange waves-effect waves-light"><i
+        class="material-icons">add</i></a>{% endblock %}
+{% block dropdown %}<li><a href="{% url 'fill' table.id %}"><i class="material-icons left">insert_invitation</i>Заполнение</a></li>{% endblock %}
+{%block content%}
+<div id="field" class="content-wrapper fill-all wh100">
+    <div class="content d-flex wrap wh100">
+        {% for field in fields %}
+        <div id="card_{{field.id}}"  data-aggfunc="{{field.aggfunc}}" class="card">
+            <a class="btn-edit-field btn-floating btn deep-orange waves-effect waves-light"><i
+                    class="material-icons">edit</i></a>
+            <div data-is_active="{{field.is_active|lower}}" data-id="{{field.id}}" class="main element">{{field.name}}</div>
+            {% for sub in field.fields_set.all %}
+            <div data-is_active="{{sub.is_active|lower}}" data-id="{{sub.id}}" class="sub element">{{sub.name}}</div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+    {{ fields.aggfunc_verbose }}
+</div>
+
+<div id="edit-chart" class="modal edit">
+    <form id="form-edit-chart" class="wh100">
+        {% csrf_token %}
+        <input type="hidden" id="type-form-edit-chart">
+        <div class="modal-content">
+            <div class="delete">Удалить</div>
+            <div class="modal-header">Добавление</div>
+            <div class="modal-controls">
+                <div class="modal-controls-main">
+                    <div class="input-field">
+                        <input id="name-chart" type="text" required class="validate name-card">
+                        <label for="name-chart">Наименование графика</label>
+                    </div>
+                    <input type="checkbox" id="active-chart"/>
+                    <label for="active-chart">Активен</label>
+                    <div class="input-field agg-chart-select">
+                        <select required id="agg-chart">
+                            <option value="-1" disabled>Выберите способ агрегирование данных</option>
+                            {% for choices in agg_choices%}
+                            <option value="{{choices.0}}" {% if firstloop%} selected {% endif %}>{{choices.1}}</option>
+                            {% endfor %}
+                        </select>
+                        <label>Способ агрегирование данных</label>
+                    </div>
+                    <div class="modal-controls-sub-desc">
+                        Пункты
+                        <a id="add-item-chart"
+                           class="btn-floating add-table-sub btn deep-orange waves-effect waves-light"><i
+                                class="material-icons">add</i></a>
+                    </div>
+                </div>
+                <div class="modal-controls-sub">
+                    <table></table>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="modal-action modal-close waves-effect btn-flat">Отмена</button>
+            <button type="submit" class="waves-effect btn-flat">Сохранить</button>
+        </div>
+    </form>
+</div>
+
+{% include 'admin/delete-form.html' %}
+
+<script>
+    var current_page = 'fields';
+    var table_id = {{table.id}};
+</script>
+
+{%endblock%}

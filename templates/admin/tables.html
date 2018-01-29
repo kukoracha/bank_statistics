@@ -1,0 +1,87 @@
+{%extends 'admin/base.html'%}
+{% load staticfiles %}
+
+{% block title %}Банк статистики{% endblock %}
+{% block logo %}<a href="{% url 'admin' %}" class="brand-logo center">Банк статистики</a>{% endblock %}
+{% block action %}<a class="btn-floating action-add btn-large deep-orange waves-effect waves-light"><i
+        class="material-icons">add</i></a>{% endblock %}
+{%block content%}
+
+<div id="tables" class="content-wrapper fill-all wh100">
+    <div class="content d-flex wrap wh100">
+        {% for table in tables %}
+        <div id="card_{{table.id}}" class="card tables">
+            <a class="btn-edit-table btn-floating btn deep-orange waves-effect waves-light"><i
+                    class="material-icons">edit</i></a>
+            <div data-is_active="{{table.is_active|lower}}" data-id="{{table.id}}" class="main element">{{table.name}}
+            </div>
+            {% for sub in table.tables_set.all %}
+            <div data-is_active="{{sub.is_active|lower}}" data-id="{{sub.id}}" class="sub element">{{sub.name}}</div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="edit-table" class="modal edit">
+    <form id="form-edit-table" class="wh100">
+        {% csrf_token %}
+        <div class="modal-content">
+            <div class="delete">Удалить</div>
+            <div class="modal-header"></div>
+            <div class="modal-controls">
+                <div class="modal-controls-main">
+                    <div class="input-field">
+                        <input id="name-table" type="text" required class="validate name-card">
+                        <label for="name-table">Наименование таблицы</label>
+                    </div>
+                    <input type="checkbox" id="active-table"/>
+                    <label for="active-table">Активна</label>
+                    <div class="modal-controls-sub-desc">
+                        Подкатегории
+                        <a id="add-sub-tables"
+                           class="btn-floating add-table-sub btn deep-orange waves-effect waves-light"><i
+                                class="material-icons">add</i></a>
+                    </div>
+                </div>
+                <div class="modal-controls-sub">
+                    <table></table>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="modal-action modal-close waves-effect btn-flat">Отмена</button>
+            <button type="submit" class="waves-effect btn-flat">Сохранить</button>
+        </div>
+    </form>
+</div>
+
+<div id="case-table" class="modal case">
+    <div class="modal-content d-flex space-between">
+        <a href="" class="chart">
+            <div class="box z-depth-1">
+                <i class="material-icons">donut_large</i>
+                <span class="label">Графики</span>
+            </div>
+        </a>
+        <a href="" class="fill">
+            <div class="box z-depth-1">
+                <i class="material-icons">insert_invitation</i>
+                <span class="label">Заполнение</span>
+            </div>
+        </a>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="modal-action modal-close waves-effect btn-flat">Отмена</button>
+    </div>
+</div>
+
+{% include 'admin/delete-form.html' %}
+
+<script>
+    var current_page = 'tables';
+
+
+</script>
+
+{%endblock%}

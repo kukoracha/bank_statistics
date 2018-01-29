@@ -1,0 +1,401 @@
+<!-- http://databank.worldbank.org/data/reports.aspx?source=world-development-indicators -->
+<!DOCTYPE html>
+<html lang="ru">
+{% load staticfiles %}
+{% load databases %}
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="apple-touch-icon-precomposed" href="{% static 'images/favicon/apple-touch-icon-152x152.png' %}">
+    <meta name="msapplication-TileColor" content="#FFFFFF">
+    <meta name="msapplication-TileImage" content="{% static 'images/favicon/mstile-144x144.png' %}">
+    <link rel="icon" href="{% static 'images/favicon/favicon-32x32.png'%}" sizes="32x32 ">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/materialize.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/jquery.mCustomScrollbar.min.css' %}">
+    <title>Банк статистики</title>
+</head>
+<body>
+<div class="wrapper d-flex column wh100">
+    <div id="frontend" class="content-wrapper d-flex column fill-all wh100 blue-grey lighten-5">
+        <nav class="deep-purple main d-flex space-between">
+            <div class="logo">Банк статистики <span>Забайкальского края</span></div>
+            <div class="tabs-wr tabs-header">
+                    <ul class="tabs tabs-transparent">
+                        <li class="tab"><a data-page="charts" href="#charts" class="active">Графики</a></li>
+                        <li class="tab"><a data-page="tables" href="#tables">Таблицы</a></li>
+                        <!--<li class="tab"><a data-page="maps" href="#maps">Карта</a></li>-->
+                    </ul>
+            </div>
+        </nav>
+
+        <div class="fixed-action-btn click-to-toggle"><a class="btn-floating btn-large waves-effect waves-light deep-orange accent-3"><i class="material-icons">menu</i></a>
+            <ul>
+              <li><a id="show-filter-list" class="btn-floating waves-effect waves-light green"><i class="material-icons">filter_list</i></a></li>
+              <li><a class="add-report btn-floating waves-effect waves-light blue"><i class="material-icons">add</i></a></li>
+            </ul>
+        </div>
+        <div class="started fill-all">
+            <div class="white-text">Для просмотра статистических данных Вам необходимо</div>
+            <div><a class="add-report waves-effect deep-purple waves-light btn-large">создать отчет</a></div>
+        </div>
+        <div class="tabs-wrapper d-flex fill-all none">
+            <div id="charts" class="tabs-content"></div>
+            <div id="tables" class="tabs-content"></div>
+            <!--<div id="maps" class="tabs-content"></div>-->
+        </div>
+
+        <div id="modal-create-report" class="modal edit">
+            <form id="form-modal-create-report" class="wh100">
+                <div class="modal-content">
+                    <div class="modal-header d-flex space-between">Создание отчета</div>
+                    <div class="modal-controls">
+                        <ul id="report-collapsible" class="collapsible" data-collapsible="expandable">
+                            <li class="modal-report-tables">
+                                <div class="collapsible-header"><i class="material-icons">border_all</i>Таблицы</div>
+                                <div class="collapsible-body">
+                                    <div class="error-msg error-tables">Выберите таблицу</div>
+                                    <div class="tables-list">
+                                        {% for database in databases|getParent %}
+                                        <div class="tables">
+                                            <div class="title">{{database.name}}</div>
+                                            {% for item in database.some_fields %}
+                                            {% if forloop.first %}
+                                            <div class="items">{% endif %}
+                                                <div class="input-checked">
+                                                    <input data-table="{{item.table_id}}" data-id="{{item.id}}"
+                                                           type="checkbox" id="item-{{item.id}}"/>
+                                                    <label for="item-{{item.id}}">{{item.name}}</label>
+                                                </div>
+                                                {% if forloop.last %}
+                                            </div>
+                                            {% endif %}
+                                            {% endfor %}
+                                            {% for sub_database in databases|getChild:database.id %}
+                                            <div class="sub-table">
+                                                <div class="title">{{sub_database.name}}</div>
+                                                {% for subitem in sub_database.some_fields %}
+                                                {% if forloop.first %}
+                                                <div class="items">{% endif %}
+                                                    <div class="input-checked">
+                                                        <input data-table="{{subitem.table_id}}"
+                                                               data-id="{{subitem.id}}" type="checkbox"
+                                                               id="item-{{subitem.id}}"/>
+                                                        <label for="item-{{subitem.id}}">{{subitem.name}}</label>
+                                                    </div>
+                                                    {% if forloop.last %}
+                                                </div>
+                                                {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="modal-report-filters">
+                                <div class="collapsible-header"><i class="material-icons">filter_list</i>Фильтры</div>
+                                <div class="collapsible-body">
+                                    <div class="error-msg error-filters">Выберите фильтр</div>
+                                    <div class="empty none">Фильтры отсутствуют</div>
+                                    <div class="filters-list"></div>
+                                    <div class="add-filterList d-flex align-center">
+                                        <button id="add-filterReport" type="button"
+                                                class="btn deep-orange accent-3 waves-effect waves-light">
+                                            Добавить фильтр
+                                        </button>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="modal-action modal-close waves-effect btn-flat">Закрыть</button>
+                    <button type="submit" class="waves-effect btn-flat">Создать</button>
+                </div>
+            </form>
+        </div>
+
+
+        <div id="modal-filter-info" class="modal edit">
+            <div class="wh100">
+                <div class="modal-content">
+                    <div class="modal-header"></div>
+                    <div class="modal-controls"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="modal-action modal-close waves-effect btn-flat">Закрыть</button>
+                </div>
+            </div>
+        </div>
+        <div id="modal-filter-list" class="modal edit">
+            <div class="wh100">
+                <div class="modal-content">
+                    <div class="modal-header d-flex space-between"><span>Список фильтров</span>
+                        <div class="add-filterList"><a id="add-filterList"
+                                                       class=" transparent z-depth-0 btn-floating waves-effect"><i
+                                class="material-icons grey-text text-darken-3">playlist_add</i></a></div>
+                    </div>
+                    <div class="modal-controls"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="modal-action modal-close waves-effect btn-flat">Закрыть</button>
+                </div>
+            </div>
+        </div>
+        <div id="modal-filter-add" class="modal edit">
+            <form id="form-modal-filter-add" class="wh100">
+                <div class="modal-content">
+                    <div class="modal-header">Создание фильтра</div>
+                    <input type="hidden" id="filterId">
+                    <div class="modal-controls">
+                        <div class="input-field filter-name">
+                            <input id="filterName" required type="text" class="validate">
+                            <label for="filterName">Наименование фильтра</label>
+                        </div>
+                        <ul id="filter-collapsible" class="collapsible" data-collapsible="expandable">
+                            <li class="modal-filter-list-region">
+                                <div class="collapsible-header"><i class="material-icons">place</i>Регионы</div>
+                                <div class="collapsible-body">
+                                    <div class="input-checked">
+                                        <input type="checkbox" id="groupRegion"/>
+                                        <label for="groupRegion">Группировать регионы</label>
+                                    </div>
+                                    <div class="label">Список регионов</div>
+                                    <div class="error-msg error-region">Выберите регион</div>
+                                    <div class="input-checked">
+                                        <input type="checkbox" id="allRegion"/>
+                                        <label for="allRegion">Выбрать все</label>
+                                    </div>
+                                    <div class="region-selected">
+                                        {% for region in regions %}
+                                        <div class="input-checked">
+                                            <input data-id="{{region.id}}" type="checkbox" id="region-{{region.id}}"/>
+                                            <label for="region-{{region.id}}">{{region.name}}</label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                            </li>
+                            <li class="modal-filter-list-date">
+                                <div class="collapsible-header"><i class="material-icons">date_range</i>Дата</div>
+                                <div class="collapsible-body">
+                                    <div class="input-checked">
+                                        <input type="checkbox" id="groupYear"/>
+                                        <label for="groupYear">Группировать год</label>
+                                    </div>
+                                    <div class="label"></div>
+                                    <div class="input-checked">
+                                        <input type="checkbox" id="groupMonth"/>
+                                        <label for="groupMonth">Группировать месяц</label>
+                                    </div>
+                                    <div class="label">Выбор даты</div>
+                                    <div class="error-msg error-date">Выберите дату</div>
+                                    <div class="input-checked">
+                                        <input type="checkbox" id="isRange"/>
+                                        <label for="isRange">Дата в диапозоне</label>
+                                    </div>
+                                    <div class="isRangeFalse">
+                                        <div class="listDate"></div>
+                                        <div class="getDate">
+                                            <div class="input-select">
+                                                <select id="getDateYear">
+                                                    <option value="" disabled selected>Выберите год</option>
+                                                    {% for y in years %}
+                                                    <option value="{{y.year}}">{{y.year}}</option>
+                                                    {% endfor%}
+                                                </select>
+                                            </div>
+                                            <div class="input-select getDateMonth">
+                                                <select multiple id="getDateMonth">
+                                                    <option value="-1" disabled selected>Выберите месяц</option>
+                                                    <option value="1">Январь</option>
+                                                    <option value="2">Февраль</option>
+                                                    <option value="3">Март</option>
+                                                    <option value="4">Апрель</option>
+                                                    <option value="5">Май</option>
+                                                    <option value="6">Июнь</option>
+                                                    <option value="7">Июль</option>
+                                                    <option value="8">Август</option>
+                                                    <option value="9">Сентябрь</option>
+                                                    <option value="10">Октябрь</option>
+                                                    <option value="11">Ноябрь</option>
+                                                    <option value="12">Декабрь</option>
+                                                </select>
+                                            </div>
+                                            <div class="addDate">
+                                                <button id="addDate" type="button"
+                                                        class="btn deep-orange accent-3 waves-effect waves-light">
+                                                    Добавить
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="isRangeTrue none">
+                                        <div class="getDate">
+                                            <div class="range start-range">
+                                                <div class="label-range">C</div>
+                                                <div class="input-select">
+                                                    <select id="getDateYearStart" class="range-select">
+                                                        <option value="" disabled selected>Выберите год</option>
+                                                        {% for y in years %}
+                                                        <option value="{{y.year}}">{{y.year}}</option>
+                                                        {% endfor%}
+                                                    </select>
+                                                </div>
+                                                <div class="input-select getDateMonth">
+                                                    <select id="getDateMonthStart" class="range-select">
+                                                        <option value="-1" disabled selected>Выберите месяц</option>
+                                                        <option value="1">Январь</option>
+                                                        <option value="2">Февраль</option>
+                                                        <option value="3">Март</option>
+                                                        <option value="4">Апрель</option>
+                                                        <option value="5">Май</option>
+                                                        <option value="6">Июнь</option>
+                                                        <option value="7">Июль</option>
+                                                        <option value="8">Август</option>
+                                                        <option value="9">Сентябрь</option>
+                                                        <option value="10">Октябрь</option>
+                                                        <option value="11">Ноябрь</option>
+                                                        <option value="12">Декабрь</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="range end-range">
+                                                <div class="label-range">по</div>
+                                                <div class="input-select ">
+                                                    <select id="getDateYearEnd" class="range-select">
+                                                        <option value="" disabled selected>Выберите год</option>
+                                                        {% for y in years %}
+                                                        <option value="{{y.year}}">{{y.year}}</option>
+                                                        {% endfor%}
+                                                    </select>
+                                                </div>
+                                                <div class="input-select getDateMonth">
+                                                    <select id="getDateMonthEnd" class="range-select">
+                                                        <option value="" disabled selected>Выберите месяц</option>
+                                                        <option value="1">Январь</option>
+                                                        <option value="2">Февраль</option>
+                                                        <option value="3">Март</option>
+                                                        <option value="4">Апрель</option>
+                                                        <option value="5">Май</option>
+                                                        <option value="6">Июнь</option>
+                                                        <option value="7">Июль</option>
+                                                        <option value="8">Август</option>
+                                                        <option value="9">Сентябрь</option>
+                                                        <option value="10">Октябрь</option>
+                                                        <option value="11">Ноябрь</option>
+                                                        <option value="12">Декабрь</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="modal-filter-list-chart">
+                                <div class="collapsible-header">
+                                    <i class="material-icons">show_chart</i>График
+                                </div>
+                                <div class="collapsible-body">
+                                    <div class="label">Выборка в графике</div>
+                                    <div class="error-msg error-chart">Выберите выборку</div>
+                                    <div class="input-field selectChart">
+                                        <select id="selectChart" class="chart-select">
+                                            <option value="-1" selected disabled>Выберите выборку</option>
+                                            <option value="r">Выборка в графике по региону</option>
+                                            <option value="d">Выборка в графике по дате</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="modal-action modal-close waves-effect btn-flat">Отмена</button>
+                    <button type="submit" class="waves-effect btn-flat">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div id="loader" class="modal">
+    <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-blue">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+                <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
+        </div>
+
+        <div class="spinner-layer spinner-red">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+                <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
+        </div>
+
+        <div class="spinner-layer spinner-yellow">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+                <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
+        </div>
+
+        <div class="spinner-layer spinner-green">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+                <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script
+        src="http://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+<script src="{% static 'js/materialize.min.js' %}"></script>
+<script src="{% static 'js/jquery.cookie.js' %}"></script>
+<script src="{% static 'js/jquery.mCustomScrollbar.concat.min.js' %}"></script>
+<script src="{% static 'js/xlsx/xlsx.core.min.js' %}"></script>
+<script src="{% static 'js/xlsx/blob.js' %}"></script>
+<script src="{% static 'js/xlsx/filesaver.js' %}"></script>
+<script src="{% static 'js/highcharts/highcharts.js' %}"></script>
+<script src="{% static 'js/tableHeadFixer.js' %}"></script>
+<script src="{% static 'js/app3.js' %}"></script>
+<script>
+ var regions = { {% for region in regions %}{{region.id}}: { 'name':  '{{region.name}}', 'short': '{{region.short_name}}' },{% endfor %} };
+ var databases = { {% for database in databases %} {% if database.some_fields|length != 0%} {{database.id}}:{title: '{{database.name}}', parent: {% if database.parent_id == None %} null {% else %} {{database.parent_id}} {% endif %}, item: { {% for s in database.some_fields %} {{s.id}}: '{{s.name}}', {% endfor %} } }, {% endif %} {% endfor %} }
+
+</script>
+</body>
+</html>

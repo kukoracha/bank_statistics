@@ -1,0 +1,13 @@
+<div id="delete-card" class="modal delete">
+    <form id="form-delete-card">
+        {% csrf_token %}
+        <input type="hidden" id="card-id">
+        <div class="modal-content">
+            Вы действиетльно хотите удалить?<br />Все данные будут потеряны.
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="modal-action modal-close waves-effect btn-flat">Отмена</button>
+            <button type="submit" class="modal-action modal-close waves-effect btn-flat">Удалить</button>
+        </div>
+    </form>
+</div>

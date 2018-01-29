@@ -1,0 +1,106 @@
+{%extends 'admin/base.html'%}
+{% load staticfiles %}
+
+{% block title %}Редактирование - Банк статистики{% endblock %}
+{% block logo %}<a href="{% url 'admin' %}" class="brand-logo center">Заполнение <span>&laquo;{{table.name}}&raquo;</span></a>{% endblock %}
+{% block action %}<a class="btn-floating action-add btn-large deep-orange waves-effect waves-light"><i
+        class="material-icons">add</i></a>{% endblock %}
+{% block dropdown %}<li><a href="{% url 'chart' table.id %}"><i class="material-icons left">donut_large</i>Редактирование</a></li>{% endblock %}
+
+
+{%block content%}
+<div id="fill" class="content-wrapper fill-all wh100">
+    <div class="content">
+        <div class="year-list">
+            {% regroup fieldFill by year as fill %}
+            {% for f in fill %}
+            <div id="year_{{f.grouper}}" style="order: {{f.grouper}};" class="year-month">
+                <div class="year">{{f.grouper}}</div>
+                <div class="month-list d-flex wrap">
+                    {% for m in f.list %}
+                    <div id="card_{{m.id}}" data-id="{{m.id}}" data-month={{m.month}} data-year="{{f.grouper}}"
+                         class="card">
+                        <a href="{% url 'chart_fill' table.id f.grouper m.month %}" class="month"></a>
+                        <a class="btn btn-flat btn-floating white waves-effect waves delete"><i
+                                class="material-icons deep-purple-text">delete</i></a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+<div id="edit-fill" class="modal edit">
+    <form id="form-edit-fill" class="wh100">
+        {% csrf_token %}
+        <div class="modal-content">
+            <div class="modal-header">Создание</div>
+            <div class="modal-controls">
+                <div class="modal-controls-main">
+                    <div class="input-field">
+                        <div class="input-field">
+                            <input type="number" required id="year-fill" class="validate autocomplete">
+                            <label for="year-fill">Год</label>
+                        </div>
+                    </div>
+                    <div class="modal-controls-sub-desc">
+                        Месяцы
+                    </div>
+                    <div class="error-msg">Выберите месяц</div>
+                </div>
+                <div class="modal-controls-sub d-flex wrap space-between align-flex-start">
+                    <div class="card" data-month="1">
+                        <div class="month"></div>
+                    </div>
+                    <div class="card" data-month="2">
+                        <div class="month"></div>
+                    </div>
+                    <div class="card" data-month="3">
+                        <div class="month"></div>
+                    </div>
+                    <div class="card" data-month="4">
+                        <div class="month"></div>
+                    </div>
+                    <div class="card" data-month="5">
+                        <div class="month"></div>
+                    </div>
+                    <div class="card" data-month="6">
+                        <div class="month"></div>
+                    </div>
+                    <div class="card" data-month="7">
+                        <div class="month"></div>
+                    </div>
+                    <div class="card" data-month="8">
+                        <div class="month"></div>
+                    </div>
+                    <div class="card" data-month="9">
+                        <div class="month"></div>
+                    </div>
+                    <div class="card" data-month="10">
+                        <div class="month"></div>
+                    </div>
+                    <div class="card" data-month="11">
+                        <div class="month"></div>
+                    </div>
+                    <div class="card" data-month="12">
+                        <div class="month"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="modal-action modal-close waves-effect btn-flat">Отмена</button>
+            <button type="submit" class="waves-effect btn-flat">Сохранить</button>
+        </div>
+    </form>
+</div>
+
+{% include 'admin/delete-form.html' %}
+<script>
+    var current_page = "fill";
+    var table_id = {{table.id}};
+</script>
+{%endblock%}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load staticfiles %}
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/materialize.min.css' %}">
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+<div class="wrapper d-flex column wh100">
+    <ul id="dropdown1" class="dropdown-content">
+        <li><a href="{% url 'admin' %}"><i class="material-icons left">date_range</i>Главная</a></li>
+        {% block dropdown %}{% endblock %}
+        <li class="divider"></li>
+        <li><a href="{% url 'logout' %}"><i class="material-icons left">exit_to_app</i>Выйти</a></li>
+    </ul>
+    <nav class="deep-purple menu">
+        {% block logo %}{% endblock %}
+        <ul class="left">
+            <li><a class="dropdown-button" data-activates="dropdown1"><i class="material-icons">more_vert</i></a>
+            </li>
+        </ul>
+        {% block action %}{% endblock %}
+    </nav>
+    {% block content %}{% endblock %}
+</div>
+<script
+        src="http://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+<script src="{% static 'js/materialize.min.js' %}"></script>
+<script src="{% static 'js/script.js' %}"></script>
+{% block script %}{% endblock %}
+</body>
+</html>

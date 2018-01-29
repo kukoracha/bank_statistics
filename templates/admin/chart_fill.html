@@ -1,0 +1,140 @@
+{%extends 'admin/base.html'%}
+{% load staticfiles %}
+
+{% block title %}Редактирование - Банк статистики{% endblock %}
+{% block logo %}<a href="{% url 'admin' %}" class="brand-logo center"><span>&laquo;{{fill.table.name}}&raquo; от {{fill.month}}.{{fill.year}}г.</span></a>{% endblock %}
+{% block action %}<a class="btn-floating action-add btn-large deep-orange waves-effect waves-light"><i
+        class="material-icons">save</i></a>{% endblock %}
+{% block dropdown %}<li><a href="{% url 'chart' fill.table_id %}"><i class="material-icons left">donut_large</i>Редактирование</a></li><li><a href="{% url 'fill' fill.table_id %}"><i class="material-icons left">insert_invitation</i>Заполнение</a></li>{% endblock %}
+
+{%block content%}
+<div id="chart_fill" class="content-wrapper fill-all wh100">
+    <div class="content wh100 d-flex column">
+        <div class="controls">
+            <div class="input-field">
+                <input type="text" id="select-region" class="autocomplete">
+                <label for="autocomplete-input">Выберите район</label>
+            </div>
+            <div class="fixed-action-btn click-to-toggle ">
+                <a class="btn-floating btn-large deep-orange waves-effect waves-light">
+                    <i class="material-icons">attach_file</i>
+                </a>
+                <ul>
+                    <li><a id="import" data-position="left" data-delay="50" data-tooltip="Импорт"
+                           class="btn-floating tooltipped deep-purple waves-effect waves-light"><i
+                            class="material-icons">file_upload</i><input type="file" class="none"
+                                                                         accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"></a>
+                    </li>
+                    <li><a id="export" data-position="left" data-delay="50" data-tooltip="Экспорт"
+                           class="btn-floating tooltipped deep-purple waves-effect waves-light"><i
+                            class="material-icons">file_download</i></a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+        <div class="empty-region main-content fill-all">Для просмотра данных выберите район</div>
+        <div class="charts fill-all main-content d-flex wrap none">
+            {% for field in fields %}
+            <div id="card_{{field.id}}" class="card">
+                <div class="name">{{field.name}}</div>
+                {% for sub in field.fields_set.all %}
+                <div class="chart-input-field">
+                    <label for="chart_{{sub.id}}">{{sub.name}}</label>
+                    <input id="chart_{{sub.id}}" type="number" data-id="{{sub.id}}" class="validate browser-default">
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div id="sure-save" class="modal delete">
+    <form id="form-save-card">
+        {% csrf_token %}
+        <input type="hidden" id="card-id">
+        <div class="modal-content">
+            Сохранить все принятые изменения?
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="modal-action modal-close waves-effect btn-flat">Отмена</button>
+            <button type="submit" class="modal-action modal-close waves-effect btn-flat">Сохранить</button>
+        </div>
+    </form>
+</div>
+
+<div id="loader" class="modal">
+    <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-blue">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+                <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
+        </div>
+
+        <div class="spinner-layer spinner-red">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+                <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
+        </div>
+
+        <div class="spinner-layer spinner-yellow">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+                <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
+        </div>
+
+        <div class="spinner-layer spinner-green">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+                <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var current_page = "chart_fill";
+    var regions = { {% for region in regions %}'{{region.name}}': {{region.id}},{% endfor %} };
+    var fill_id = {{fill.id}};
+    {% regroup fieldsValue by region as fields_list %}
+    var fieldsValue = { {% for fields in fields_list %}{{ fields.grouper.id }}:{ {% for f in fields.list %}{{f.field_id}}: {'value' : {{f.value}}, 'changed': false},{% endfor %} },{% endfor %} };
+
+
+
+</script>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/xlsx/xlsx.full.min.js' %}"></script>
+
+<script src="{% static 'js/xlsx/blob.js' %}"></script>
+<script src="{% static 'js/xlsx/filesaver.js' %}"></script>
+
+<script src="{% static 'js/xlsx/swfobject.js' %}"></script>
+<script src="{% static 'js/xlsx/downloadify.min.js' %}"></script>
+<script src="{% static 'js/xlsx/filesaver.js' %}"></script>
+{% endblock %}
